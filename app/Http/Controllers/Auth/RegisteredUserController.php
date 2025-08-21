@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,21 +35,31 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'purpose' => 'required|in:employer,jobseeker',
+            'purpose' => 'in:employer,jobseeker',
         ]);
+
+        // send toast to user
+        $request->session()->flash('success', 'User registered successfully');
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'purpose' => $request->purpose,
         ]);
 
-        $user->assignRole('user');
-
-        if ($request->purpose == 'employer') {
-            $user->assignRole('employer');
-        } else if ($request->purpose == 'jobseeker') {
-            $user->assignRole('jobseeker');
+        try {
+            $user->assignRole('user');
+            
+            if ($request->purpose == 'employer') {
+                $user->assignRole('employer');
+            } elseif ($request->purpose == 'jobseeker') {
+                $user->assignRole('jobseeker');
+            }
+        } catch (\Exception $e) {
+            // Log the error and handle appropriately
+            Log::error('Role assignment failed: ' . $e->getMessage());
+            // You might want to delete the user or handle this scenario
         }
 
         event(new Registered($user));

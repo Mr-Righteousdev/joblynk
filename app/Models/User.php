@@ -24,6 +24,10 @@ class User extends Authenticatable implements HasMedia
         'name',
         'email',
         'password',
+        'purpose',
+        'avatar',
+        'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -52,5 +56,73 @@ class User extends Authenticatable implements HasMedia
     public function mediaFolders()
     {
         return $this->hasMany(MediaFolder::class);
+    }
+
+    // Relationships
+    public function profile()
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function company()
+    {
+        return $this->hasOne(Company::class);
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+
+    public function savedJobs()
+    {
+        return $this->hasMany(SavedJob::class);
+    }
+
+    public function jobAlerts()
+    {
+        return $this->hasMany(JobAlert::class);
+    }
+
+    // Scopes
+    public function scopeJobSeekers($query)
+    {
+        return $query->where('role', 'job_seeker');
+    }
+
+    public function scopeEmployers($query)
+    {
+        return $query->where('role', 'employer');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    // Helper methods
+    public function isJobSeeker(): bool
+    {
+        return $this->role === 'job_seeker';
+    }
+
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function hasCompany(): bool
+    {
+        return $this->company()->exists();
+    }
+
+    public function hasProfile(): bool
+    {
+        return $this->profile()->exists();
     }
 }

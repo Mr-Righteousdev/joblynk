@@ -16,7 +16,7 @@ interface RegisterForm {
     email: string;
     password: string;
     password_confirmation: string;
-    purpose: string;
+    purpose?: 'jobseeker' | 'employer'; // Made optional
 }
 
 export default function Register() {
@@ -25,15 +25,32 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
-        purpose: '',
+        // Don't initialize purpose - it will be set on button click
     });
 
     const handleSubmit = (purpose: 'jobseeker' | 'employer'): FormEventHandler => (e) => {
         e.preventDefault();
-        setData('purpose', purpose); // Set the purpose before submitting
+        
+        // Include purpose directly in the request data
         post(route('register'), {
+            data: { ...data, purpose },
             onFinish: () => reset('password', 'password_confirmation'),
         });
+    };
+
+    // Alternative approach - you could also set purpose first, then submit
+    const handleSubmitAlternative = (purpose: 'jobseeker' | 'employer') => (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // First set the purpose, then submit in the callback
+        setData('purpose', purpose);
+        
+        // Use setTimeout to ensure state is updated (not ideal, but works)
+        setTimeout(() => {
+            post(route('register'), {
+                onFinish: () => reset('password', 'password_confirmation'),
+            });
+        }, 0);
     };
 
     return (
@@ -109,7 +126,7 @@ export default function Register() {
                     <div className="flex gap-2">
                         <Button
                             type="submit"
-                            className="mt-2 flex w-full gap-2 bg-blue-500"
+                            className="mt-2 flex w-full gap-2 bg-blue-500 hover:bg-blue-600"
                             tabIndex={5}
                             disabled={processing}
                             onClick={handleSubmit('jobseeker')}
@@ -119,12 +136,12 @@ export default function Register() {
                             ) : (
                                 <User className="h-4 w-4" />
                             )}
-                            Jobseeker
+                            Register as Jobseeker
                         </Button>
 
                         <Button
                             type="submit"
-                            className="mt-2 flex w-full gap-2 bg-blue-500"
+                            className="mt-2 flex w-full gap-2 bg-green-500 hover:bg-green-600"
                             tabIndex={6}
                             disabled={processing}
                             onClick={handleSubmit('employer')}
@@ -134,9 +151,12 @@ export default function Register() {
                             ) : (
                                 <Briefcase className="h-4 w-4" />
                             )}
-                            Employer
+                            Register as Employer
                         </Button>
                     </div>
+                    
+                    {/* Add error display for purpose field */}
+                    <InputError message={errors.purpose} />
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
