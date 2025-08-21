@@ -9,11 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
+import { Briefcase, User } from "lucide-react";
+
 interface RegisterForm {
     name: string;
     email: string;
     password: string;
     password_confirmation: string;
+    purpose: string;
 }
 
 export default function Register() {
@@ -22,10 +25,12 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        purpose: '',
     });
 
-    const submit: FormEventHandler = (e) => {
+    const handleSubmit = (purpose: 'jobseeker' | 'employer'): FormEventHandler => (e) => {
         e.preventDefault();
+        setData('purpose', purpose); // Set the purpose before submitting
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -34,7 +39,7 @@ export default function Register() {
     return (
         <AuthLayout title="Create an account" description="Enter your details below to create your account">
             <Head title="Register" />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
+            <form className="flex flex-col gap-6">
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
@@ -101,15 +106,42 @@ export default function Register() {
                         <InputError message={errors.password_confirmation} />
                     </div>
 
-                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            type="submit"
+                            className="mt-2 flex w-full gap-2 bg-blue-500"
+                            tabIndex={5}
+                            disabled={processing}
+                            onClick={handleSubmit('jobseeker')}
+                        >
+                            {processing ? (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <User className="h-4 w-4" />
+                            )}
+                            Jobseeker
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            className="mt-2 flex w-full gap-2 bg-blue-500"
+                            tabIndex={6}
+                            disabled={processing}
+                            onClick={handleSubmit('employer')}
+                        >
+                            {processing ? (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Briefcase className="h-4 w-4" />
+                            )}
+                            Employer
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
                     Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
+                    <TextLink href={route('login')} tabIndex={7}>
                         Log in
                     </TextLink>
                 </div>
