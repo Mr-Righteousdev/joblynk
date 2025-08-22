@@ -27,8 +27,13 @@ export function AppSidebarHeader({ breadcrumbs = [] }: AppSidebarHeaderProps) {
 
       {/* Right: Language + Theme */}
       <div className="flex items-center gap-4">
-        {auth.user?.name && <p className="text-sm font-medium">{auth.user.name}</p>}
-        {auth.user?.role?.name && <p className="text-sm font-medium">{auth.user.role.name}</p>}
+        {auth.user?.name && (
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-medium">{auth.user.name}</p>
+            <span className="text-xs text-muted-foreground">({auth.user.purpose})</span>
+          </div>
+        )}
+        
         <Select value={lang} onValueChange={setLang}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Language" />
